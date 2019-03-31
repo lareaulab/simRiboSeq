@@ -21,18 +21,10 @@ genSequence <- function(nCodons, codonDist) {
 }
 
 ### yeast genome
+source("scripts/helper.R")
+yeastFAfile <- "refData/scer.transcripts.13cds10.fa"
+yeastGeneCodons <- readFAfile(yeastFAfile, pad5=13, pad3=10)
 yeastGeneLengths <- read.table("refData/scer.transcripts.13cds10.lengths.txt", header=F)[,3]/3
-yeastFAfile <- readLines("refData/scer.transcripts.13cds10.fa")
-yeastGeneCodons <- lapply(grep(">", yeastFAfile),
-                     function(x) {
-                       sequence <- yeastFAfile[x+1]
-                       nCodons <- floor(nchar(sequence)/3)
-                       # account for 13cds10
-                       codons <- substring(sequence, first=(3*(1:nCodons)-1), last=(3*(1:nCodons)+1))
-                       # 0-based indexing
-                       names(codons) <- as.character(seq.int(from=-4, length.out=nCodons))
-                       return(codons)
-                     })
 codons <- apply(expand.grid(c("A", "T", "C", "G"),
                             c("A", "T", "C", "G"),
                             c("A", "T", "C", "G")),
