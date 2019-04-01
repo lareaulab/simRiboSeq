@@ -17,6 +17,7 @@ genSequence <- function(nCodons, codonDist) {
   ## generate artifical transcript sequence
   # nCodons: scalar; number of codons in transcript
   # codonDist: named numeric vector; genomic codon proportions (must add to 1)
+  codonDist <- codonDist / sum(codonDist)
   sample(names(codonDist), size=nCodons, replace=T, prob=codonDist)
 }
 

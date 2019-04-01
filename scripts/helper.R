@@ -11,10 +11,15 @@ readFAfile <- function(faFile, pad5, pad3) {
                      sequence <- rawFile[x+1]
                      nCodons <- floor((nchar(sequence) - (pad5 %% 3) - (pad3 %% 3))/3)
                      offset <- pad5 %% 3
-                     codons <- substring(sequence, first=(3*(1:nCodons-1)+1)+offset, last=(3*(1:nCodons))+offset)
-                     names(codons) <- as.character(seq.int(from=-floor(pad5/3), length.out=nCodons))
-                     return(codons)
+                     codonSequence <- substring(sequence, first=(3*(1:nCodons-1)+1)+offset, last=(3*(1:nCodons))+offset)
+                     names(codonSequence) <- as.character(seq.int(from=-floor(pad5/3), length.out=nCodons))
+                     return(codonSequence)
                    })
   names(faList) <- transcriptNames
   return(faList)
+}
+
+readRawProfiles <- function(inputFile) {
+  ## read in rawProfiles.txt file, convert to list of vectors of ribosome counts per codon per transcript
+  
 }
