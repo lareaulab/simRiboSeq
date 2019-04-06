@@ -29,6 +29,25 @@ readFAfile <- function(faFile, pad5, pad3) {
   return(faList)
 }
 
+countCodons <- function(faList, codons, pad5, pad3) {
+  ## count up codons across transcriptome
+  # faList: output list from readFAfile()
+  # codons: character vector; codons in transcriptome
+  # pad5: numeric; number of nt padding 5' end of cds
+  # pad3: numeric; number of nt padding 3' end of cds
+  pad5 <- floor(pad5/3)
+  pad3 <- floor(pad3/3)
+  codonCounts <- sapply(faList,
+                        function(gene) {
+                          gene_trim <- gene[(pad5+1):(length(gene)-pad3-1)]
+                          sapply(codons,
+                                 function(codon) {
+                                   sum(gene_trim==codon)
+                                 })
+                        })
+  return(codonCounts)
+}
+
 readRawProfiles <- function(inputFile) {
   ## read in rawProfiles.txt file, convert to list of vectors of ribosome counts per codon per transcript
   rawFile <- readLines(inputFile)
@@ -52,6 +71,7 @@ writeTranscriptomeFA <- function(transcripts, outFile) {
   # transcripts: character vector; transcript sequences
   # outFile: filename for output .fa file
   nTranscripts <- length(transcripts)
+  transcripts <- sapply(transcripts, paste, collapse="")
   outputFA <- rep(NULL, 2*nTranscripts)
   outputFA[2*(1:nTranscripts)-1] <- paste0(">", names(transcripts))
   outputFA[2*(1:nTranscripts)] <- transcripts
