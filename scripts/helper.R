@@ -31,5 +31,18 @@ readFAfile <- function(faFile, pad5, pad3) {
 
 readRawProfiles <- function(inputFile) {
   ## read in rawProfiles.txt file, convert to list of vectors of ribosome counts per codon per transcript
-  
+  rawFile <- readLines(inputFile)
+  transcriptNames <- sapply(rawFile,
+                            function(x) {
+                              strsplit(x, split="\t")[[1]][1]
+                            })
+  codonCounts <- lapply(rawFile,
+                        function(x) {
+                          counts <- strsplit(x, split="\t")[[1]]
+                          nCodons <- length(counts)-1
+                          counts <- as.numeric(counts[1:nCodons+1])
+                          return(counts)
+                        })
+  names(codonCounts) <- transcriptNames
+  return(codonCounts)
 }
