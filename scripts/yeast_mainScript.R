@@ -4,9 +4,9 @@ rm(list=ls())
 
 library(parallel)
 
-scriptDir <- "./scripts/"
-outputDir <- "./outputs/"
-refDir <- "./refData/"
+scriptDir <- "."
+outputDir <- "../outputs"
+refDir <- "../refData"
 
 scripts <- c("helper.R", "simTranscriptome.R", "simRibosomeDist.R", "simFootprints.R")
 for(x in scripts) {source(file.path(scriptDir, x))}
