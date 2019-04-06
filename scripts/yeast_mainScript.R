@@ -124,7 +124,7 @@ system.time({
                 ligBias=green_n3bias, circBias=green_p5bias)
 })
 yeast_uniform_footprints <- simFootprints(yeast_uniform, 
-                                          nRibosomes=1e7,
+                                          nRibosomes=8e7,
                                           rhos=yeast_uniform_rho,
                                           pis=yeast_uniform_pi,
                                           delta5=delta5_uniform,
@@ -132,9 +132,9 @@ yeast_uniform_footprints <- simFootprints(yeast_uniform,
                                           ligBias=green_n3bias,
                                           circBias=green_p5bias)
 save(yeast_uniform_footprints, 
-     file=file.path(outputDir, "yeast_uniformCodons_uniformDelta_footprints_10Mreads.Rda"))
+     file=file.path(outputDir, "yeast_uniformCodons_uniformDelta_footprints_80Mreads.Rda"))
 writeFootprintsFA(yeast_uniform_footprints,
-                  file.path(outputDir, "yeast_uniformCodons_uniformDelta_10Mreads.fa"))
+                  file.path(outputDir, "yeast_uniformCodons_uniformDelta_80Mreads.fa"))
 
 
 # simulation 2 ------------------------------------------------------------
@@ -164,7 +164,7 @@ save(yeast_yeast_rho, yeast_yeast_pi,
 # minSize=27, maxSize=31
 # green data for ligBias (3') and circBias (5')
 yeast_yeast_footprints <- simFootprints(yeast_yeast, 
-                                          nRibosomes=1e7,
+                                          nRibosomes=8e7,
                                           rhos=yeast_yeast_rho,
                                           pis=yeast_yeast_pi,
                                           delta5=delta5_uniform,
@@ -172,6 +172,6 @@ yeast_yeast_footprints <- simFootprints(yeast_yeast,
                                           ligBias=green_n3bias,
                                           circBias=green_p5bias)
 save(yeast_yeast_footprints, 
-     file=file.path(outputDir, "yeast_yeastCodons_yeastDelta_footprints_10Mreads.Rda"))
+     file=file.path(outputDir, "yeast_yeastCodons_yeastDelta_footprints_80Mreads.Rda"))
 writeFootprintsFA(yeast_yeast_footprints,
-                  file.path(outputDir, "yeast_yeastCodons_uniformDelta_10Mreads.fa"))
+                  file.path(outputDir, "yeast_yeastCodons_uniformDelta_80Mreads.fa"))
