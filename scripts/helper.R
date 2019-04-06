@@ -46,3 +46,27 @@ readRawProfiles <- function(inputFile) {
   names(codonCounts) <- transcriptNames
   return(codonCounts)
 }
+
+writeTranscriptomeFA <- function(transcripts, outFile) {
+  ## write output from simTranscriptome() to .fa file
+  # transcripts: character vector; transcript sequences
+  # outFile: filename for output .fa file
+  nTranscripts <- length(transcripts)
+  outputFA <- rep(NULL, 2*nTranscripts)
+  outputFA[2*(1:nTranscripts)-1] <- paste0(">", names(transcripts))
+  outputFA[2*(1:nTranscripts)] <- transcripts
+  writeLines(outputFA, con=outFile, sep="\n")
+}
+
+writeFootprintsFA <- function(footprints, outFile) {
+  ## write output from simFootprints() to .fa file
+  # footprints: list of "footprints" objects
+  # outFile: filename for output .fa file
+  nFootprints <- length(footprints)
+  outputFA <- rep(NULL, 2*nFootprints)
+  footprintNames <- sapply(footprints, function(x) paste(x@transcript, x@ASite, sep="_"))
+  footprintSequences <- sapply(footprints, function(x) x@sequence)
+  outputFA[2*(1:nTranscripts)-1] <- paste0(">", footprintNames)
+  outputFA[2*(1:nTranscripts)] <- footprintSequences
+  writeLines(outputFA, con=outFile, sep="\n")
+}
