@@ -86,7 +86,7 @@ writeFootprintsFA <- function(footprints, outFile) {
   outputFA <- rep(NULL, 2*nFootprints)
   footprintNames <- sapply(footprints, function(x) paste(x@transcript, x@ASite, sep="_"))
   footprintSequences <- sapply(footprints, function(x) x@sequence)
-  outputFA[2*(1:nTranscripts)-1] <- paste0(">", footprintNames)
-  outputFA[2*(1:nTranscripts)] <- footprintSequences
+  outputFA[2*(1:nFootprints)-1] <- paste0(">", footprintNames)
+  outputFA[2*(1:nFootprints)] <- footprintSequences
   writeLines(outputFA, con=outFile, sep="\n")
 }
