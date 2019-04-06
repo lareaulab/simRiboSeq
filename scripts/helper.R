@@ -1,17 +1,27 @@
 readFAfile <- function(faFile, pad5, pad3) {
-  ## read in .fa file, convert to list of vectors of codons per transcript
+  ## read in .fa file where sequence broken up over multiple lines, convert to list of vectors of codons per transcript
   # faFile: character; path to .fa file of transcript sequences
   # pad5: numeric; number of nt padding 5' end of cds
   # pad3: numeric; number of nt padding 3' end of cds
   rawFile <- readLines(faFile)
   transcriptStartLines <- grep(">", rawFile)
-  transcriptNames <- sub(">", "", rawFile[transcriptStartLines])
-  faList <- lapply(transcriptStartLines,
+  nTranscripts <- length(transcriptStartLines)
+  transcriptNames <- sapply(transcriptStartLines,
+                            function(x) {
+                              gsub(">", "", strsplit(rawFile[x], split=" ")[[1]][1])
+                            })
+  transcriptStartLines <- c(transcriptStartLines, length(rawFile)+1)
+  transcriptStartLines <- c(transcriptStartLines, length(rawFile)+1) # add extra line for bookkeeping
+  faList <- sapply(1:nTranscripts,
                    function(x) {
-                     sequence <- rawFile[x+1]
-                     nCodons <- floor((nchar(sequence) - (pad5 %% 3) - (pad3 %% 3))/3)
-                     offset <- pad5 %% 3
-                     codonSequence <- substring(sequence, first=(3*(1:nCodons-1)+1)+offset, last=(3*(1:nCodons))+offset)
+                     startLine <- transcriptStartLines[x]+1
+                     endLine <- transcriptStartLines[x+1]-1
+                     transcriptSequence <- paste(rawFile[startLine:endLine], collapse="")
+                     nCodons <- floor((nchar(transcriptSequence)-pad5-pad3)/3)
+                     sequenceOffset <- pad5 %% 3
+                     codonSequence <- substring(transcriptSequence, 
+                                                first=(3*(1:nCodons-1)+1)+sequenceOffset, 
+                                                last=(3*(1:nCodons))+sequenceOffset)
                      names(codonSequence) <- as.character(seq.int(from=-floor(pad5/3), length.out=nCodons))
                      return(codonSequence)
                    })
