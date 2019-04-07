@@ -3,7 +3,7 @@ genRawProfiles <- function(nRibosomes, rhos, pis) {
   # nRibosomes: scalar; number of ribosomes per expt
   # pis: list of numeric vector; multinomial probabilities for ribosomes per codon per transcript [ output from simPi() ]
   # rhos: numeric vector; multinomial probilities for ribosomes per transcript [ output from simRho() ]
-  print("... generating raw profile ...")
+  print("... ... generating raw profile")
   riboPerTrans <- rmultinom(n=1, size=nRibosomes, prob=rhos)
   rawProfile <- mapply(rmultinom, 
                        n=1,
@@ -25,7 +25,7 @@ digest <- function(faList, riboCounts, delta5, delta3, minSize=27, maxSize=31,
   # maxSize: scalar; maximum footprint size
   # mc.cores: scalar; number of cores to use for parallelization
   # digest_transcript: function; function that digests individual transcript
-  print("... digesting footprints ...")
+  print("... ... digesting footprints ...")
   nTranscripts <- length(faList)
   # define function digest_transcript()
   digest_transcript <- function(codonSequence, riboCounts, transcriptName, delta5, delta3) {
@@ -93,7 +93,7 @@ ligate <- function(footprints, ligBias) {
   ## apply preferential 3' bias to digested footprints
   # footprints: character vector; sequences of digested footprints
   # ligBias: named numeric vector; probabilties of successful ligation for bias regions
-  print("... ligating footprints ...")
+  print("... ... ligating footprints ...")
   biasLength <- nchar(names(ligBias)[1])
   biasRegions <- getBiasRegion(footprints, region=3, biasLength=biasLength)
   ligateProbs <- ligBias[match(biasRegions, names(ligBias))]
@@ -106,7 +106,7 @@ circularize <- function(footprints, circBias) {
   ## apply preferential 5' bias to digested+ligated footprints
   # footprints: character vector; sequences of digested+ligated footprints
   # circBias: named numeric vector; probabilities of successful circularization for bias regions
-  print("... circularizing footprints ...")
+  print("... ... circularizing footprints ...")
   biasLength <- nchar(names(circBias)[1])
   biasRegions <- getBiasRegion(footprints, region=5, biasLength=biasLength)
   circProbs <- circBias[match(biasRegions, names(circBias))]
@@ -133,8 +133,9 @@ simFootprints <- function(faList, nRibosomes, rhos, pis,
   # ligBias: named numeric vector; probabilties of successful ligation for bias regions
   # circBias: named numeric vector; probabilities of successful circularization for bias regions
   if(is.null(mc.cores)) {mc.cores <- parallel::detectCores()-10}
+  print(paste("Number of cores:", mc.cores))
   nRounds <- 1
-  print(paste("Round", nRounds, "of simulating footprints"))
+  print(paste("... Round", nRounds, "of simulating footprints"))
   codonCounts <- genRawProfiles(nRibosomes, rhos, pis)
   footprints <- digest(faList, codonCounts, delta5, delta3, minSize, maxSize, 
                        mc.cores, digest_transcript)
@@ -145,7 +146,7 @@ simFootprints <- function(faList, nRibosomes, rhos, pis,
               " % ) footprints simulated"))
   while(length(footprints) < nRibosomes) {
     nRounds <- nRounds + 1
-    print(paste("Round", nRounds, "of simulating footprints"))
+    print(paste("... Round", nRounds, "of simulating footprints"))
     tmpCodonCounts <- genRawProfiles(nRibosomes, rhos, pis)
     tmpFootprints <- digest(faList, codonCounts, delta5, delta3, minSize, maxSize, 
                             mc.cores, digest_transcript)
