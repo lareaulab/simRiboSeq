@@ -15,7 +15,7 @@ genRawProfiles <- function(nRibosomes, rhos, pis) {
 }
 
 digest <- function(faList, riboCounts, delta5, delta3, minSize=27, maxSize=31, 
-                   mc.cores, digest_transcript) {
+                   mc.cores=mc.cores, digest_transcript=digest_transcript) {
   ## generate footprint sequences for all transcripts (in faList and rawProfiles)
   # faList: output list from readFAfile()
   # riboCounts: output list from simProfiles()
@@ -68,11 +68,12 @@ digest <- function(faList, riboCounts, delta5, delta3, minSize=27, maxSize=31,
   return(footprints)
 }
 
-getBiasRegion <- function(footprints, region, biasLength) {
+getBiasRegion <- function(footprints, region, biasLength, mc.cores=mc.cores) {
   ## get nucleotide sequence for specified bias region
   # footprints: list of "footprint" objects
   # region: scalar; 5 for 5' region, 3 for 3' region
   # biasLength: scalar; number of nucleotides in bias region
+  # mc.cores: scalar; number of cores to use for parallelization
   footprintLengths <- sapply(footprints, function(x) nchar(x@sequence))
   if(region==5) {
     biasStart <- 1
@@ -82,10 +83,10 @@ getBiasRegion <- function(footprints, region, biasLength) {
     biasEnd <- footprintLengths
     biasStart <- biasEnd - biasLength + 1
   }
-  biasRegions <- unlist(mapply(substring,
-                               text=sapply(footprints, function(x) x@sequence),
-                               first=biasStart,
-                               last=biasEnd))
+  biasRegions <- unlist(mcmapply(substring,
+                                 text=sapply(footprints, function(x) x@sequence),
+                                 first=biasStart,
+                                 last=biasEnd))
   return(biasRegions)
 }
 
@@ -137,8 +138,7 @@ simFootprints <- function(faList, nRibosomes, rhos, pis,
   nRounds <- 1
   print(paste("... Round", nRounds, "of simulating footprints"))
   codonCounts <- genRawProfiles(nRibosomes, rhos, pis)
-  footprints <- digest(faList, codonCounts, delta5, delta3, minSize, maxSize, 
-                       mc.cores, digest_transcript)
+  footprints <- digest(faList, codonCounts, delta5, delta3, minSize, maxSize)
   footprints <- ligate(footprints, ligBias)
   footprints <- circularize(footprints, circBias)
   print(paste(length(footprints), "of", nRibosomes, 
@@ -148,8 +148,7 @@ simFootprints <- function(faList, nRibosomes, rhos, pis,
     nRounds <- nRounds + 1
     print(paste("... Round", nRounds, "of simulating footprints"))
     tmpCodonCounts <- genRawProfiles(nRibosomes, rhos, pis)
-    tmpFootprints <- digest(faList, codonCounts, delta5, delta3, minSize, maxSize, 
-                            mc.cores, digest_transcript)
+    tmpFootprints <- digest(faList, codonCounts, delta5, delta3, minSize, maxSize)
     tmpFootprints <- ligate(footprints, ligBias)
     tmpFootprints <- circularize(footprints, circBias)
     if(length(tmpFootprints) > (nRibosomes-length(footprints))) {
