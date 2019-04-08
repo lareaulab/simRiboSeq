@@ -3,6 +3,10 @@ rm(list=ls())
 # load scripts ------------------------------------------------------------
 
 library(parallel)
+library(httr)
+set_config( config( ssl_verifypeer = 0L ) )
+devtools::install_github("krlmlr/ulimit")
+ulimit::memory_limit(4000) #4000 is the memory requested/required in Mb
 
 scriptDir <- "."
 outputDir <- "../outputs"
@@ -28,9 +32,12 @@ delta3_uniform <- rep(1, 3)/3
 names(delta3_uniform) <- as.character(0:2)
 minSize <- 27
 maxSize <- 31
-nReads_weinberg <- 72928017
-nReads_green <- 55018963
-nReads_lareau <- 85607480
+# nReads_weinberg <- 72928017
+# nReads_green <- 55018963
+# nReads_lareau <- 85607480
+nReads <- 8e7
+partSize <- 1e6
+nParts <- nReads/partSize
 
 ## yeast genome params for simTranscriptome()
 yeastFAfile <- "scer.transcripts.13cds10.fa"
@@ -43,6 +50,7 @@ yeastFAlist <- yeastFAlist[lengths(yeastFAlist) > (yeast_pad5+yeast_pad3+20)]
 yeastLengths <- lengths(yeastFAlist) - floor(yeast_pad5/3) - floor(yeast_pad3/3)
 yeastCodonCounts <- countCodons(yeastFAlist, codons, yeast_pad5, yeast_pad3)
 yeastCodonDist <- rowSums(yeastCodonCounts)/sum(yeastCodonCounts)
+rm(yeastFAlist)
 
 # ## human genome params for simTranscriptome()
 # humanFAfile <- "gencode.v22.transcript.13cds10.fa"
@@ -62,6 +70,7 @@ weinberg_data <- readRawProfiles(file.path(refDir, weinberg_file))
 weinberg_lengths <- lengths(weinberg_data)
 weinberg_abundances <- sapply(weinberg_data, sum)
 weinberg_nRibosomes <- sum(weinberg_abundances)
+rm(weinberg_data)
 
 ## weinberg expt: codon TE scores for simRho()
 weinberg_codonTEfile <- "tunney_supp_table_2_codon_scores.csv"
@@ -119,45 +128,29 @@ save(yeast_uniform_rho, yeast_uniform_pi,
 # minSize=27, maxSize=31
 # green data for ligBias (3') and circBias (5')
 
+# # test for timing
 # system.time({
-#   simFootprints(yeast_uniform, 1e5, rhos=yeast_uniform_rho, pis=yeast_uniform_pi,
+#   simFootprints(yeast_uniform, 1e6, rhos=yeast_uniform_rho, pis=yeast_uniform_pi,
 #                 delta5=delta5_uniform, delta3=delta3_uniform,
-#                 ligBias=green_n3bias, circBias=green_p5bias)
+#                 ligBias=green_n3bias, circBias=green_p5bias,
+#                 digest_transcript=digest_transcript)
 # })
 
-# yeast_uniform_footprints <- simFootprints(yeast_uniform, 
-#                                           nRibosomes=8e7,
-#                                           rhos=yeast_uniform_rho,
-#                                           pis=yeast_uniform_pi,
-#                                           delta5=delta5_uniform,
-#                                           delta3=delta3_uniform,
-#                                           ligBias=green_n3bias,
-#                                           circBias=green_p5bias)
-# save(yeast_uniform_footprints, 
-#      file=file.path(outputDir, "yeast_uniformCodons_uniformDelta_footprints_80Mreads.Rda"))
-# writeFootprintsFA(yeast_uniform_footprints,
-#                   file.path(outputDir, "yeast_uniformCodons_uniformDelta_80Mreads.fa"))
-
-nReads <- 8e7
-partSize <- 5e6
-nParts <- nReads/partSize
 for(i in 1:nParts) {
   print(paste("Part", i, "of", nParts))
-  tmpFilename <- paste0("yeast_uniform_footprints_part", i)
-  assign(tmpFilename,
+  partName <- paste0("yeast_uniform_uniform_part", i)
+  part_filename <- paste0("yeast_uniformCodons_uniformDelta_80Mreads_part", i)
+  assign(partName, 
          value=simFootprints(yeast_uniform, nRibosomes=partSize, 
                              rhos=yeast_uniform_rho, pis=yeast_uniform_pi,
                              delta5=delta5_uniform, delta3=delta3_uniform,
-                             ligBias=green_n3bias, circBias=green_p5bias))
-  save(list=tmpFilename,
-       file=file.path(outputDir, 
-                      paste0("yeast_uniformCodons_uniformDelta_footprints_80Mreads_part", 
-                             i, ".Rda")))
-  writeFootprintsFA(get(tmpFilename), 
-                    file.path(outputDir, 
-                               paste0("yeast_uniformCodons_uniformDelta_80Mreads_part", i, ".fa")))
+                             ligBias=green_n3bias, circBias=green_p5bias,
+                             digest_transcript=digest_transcript))
+  writeFootprintsFA(get(partName),
+                    file.path(outputDir, paste0(part_filename, ".fa")))
+  save(list=partName, 
+       file=file.path(outputDir, paste0(part_filename, ".Rda")))
 }
-
 
 # simulation 2 ------------------------------------------------------------
 
@@ -185,32 +178,18 @@ save(yeast_yeast_rho, yeast_yeast_pi,
 # uniform delta5, delta3
 # minSize=27, maxSize=31
 # green data for ligBias (3') and circBias (5')
-# yeast_yeast_footprints <- simFootprints(yeast_yeast, 
-#                                           nRibosomes=8e7,
-#                                           rhos=yeast_yeast_rho,
-#                                           pis=yeast_yeast_pi,
-#                                           delta5=delta5_uniform,
-#                                           delta3=delta3_uniform,
-#                                           ligBias=green_n3bias,
-#                                           circBias=green_p5bias)
-# save(yeast_yeast_footprints, 
-#      file=file.path(outputDir, "yeast_yeastCodons_yeastDelta_footprints_80Mreads.Rda"))
-# writeFootprintsFA(yeast_yeast_footprints,
-#                   file.path(outputDir, "yeast_yeastCodons_uniformDelta_80Mreads.fa"))
 for(i in 1:nParts) {
   print(paste("Part", i, "of", nParts))
-  tmpFilename <- paste0("yeast_yeast_footprints_part", i)
-  assign(tmpFilename,
+  partName <- paste0("yeast_yeast_yeast_part", i)
+  part_filename <- paste0("yeast_yeastCodons_yeastDelta_80Mreads_part", i)
+  assign(partName, 
          value=simFootprints(yeast_yeast, nRibosomes=partSize, 
                              rhos=yeast_yeast_rho, pis=yeast_yeast_pi,
                              delta5=delta5_uniform, delta3=delta3_uniform,
-                             ligBias=green_n3bias, circBias=green_p5bias))
-  save(list=tmpFilename,
-       file=file.path(outputDir, 
-                      paste0("yeast_yeastCodons_yeastDelta_footprints_80Mreads_part", 
-                             i, ".Rda")))
-  writeFootprintsFA(get(tmpFilename), 
-                    file.path(outputDir, 
-                              paste0("yeast_yeastCodons_yeastDelta_80Mreads_part", i, ".fa")))
+                             ligBias=green_n3bias, circBias=green_p5bias,
+                             digest_transcript=digest_transcript))
+  writeFootprintsFA(get(partName),
+                    file.path(outputDir, paste0(part_filename, ".fa")))
+  save(list=partName, 
+       file=file.path(outputDir, paste0(part_filename, ".Rda")))
 }
-
