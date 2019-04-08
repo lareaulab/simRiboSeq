@@ -192,4 +192,5 @@ for(i in 1:nParts) {
                     file.path(outputDir, paste0(part_filename, ".fa")))
   save(list=partName, 
        file=file.path(outputDir, paste0(part_filename, ".Rda")))
+  rm(list=partName)
 }
