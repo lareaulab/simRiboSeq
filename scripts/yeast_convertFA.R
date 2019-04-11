@@ -13,6 +13,7 @@ for(x in 1:length(faFiles)) {
   footprintSequences <- sapply(get(objName), function(x) x@sequence)
   outputFA[2*(1:nFootprints)-1] <- paste0(">", footprintNames)
   outputFA[2*(1:nFootprints)] <- footprintSequences
-  writeLines(outputFA, con=sub(".Rda", ".fa", x))
+  outFile <- sub(".Rda", ".fa", faFiles[x])
+  writeLines(outputFA, con=outFile, sep="\n")
   rm(list=objName)
 }
