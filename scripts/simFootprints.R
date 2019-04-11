@@ -25,7 +25,8 @@ digest_transcript <- function(codonSequence, riboCounts, transcriptName, delta5,
                                                 transcript="character",
                                                 ASite="numeric",
                                                 digest5="numeric",
-                                                digest3="numeric"))
+                                                digest3="numeric",
+                                                id="numeric"))
   startCodon <- which(names(codonSequence)=="0")
   startPosition <- 3*(startCodon-1)+1
   # 1. convert vector of codons to vector of nucleotides
@@ -41,8 +42,10 @@ digest_transcript <- function(codonSequence, riboCounts, transcriptName, delta5,
   footprintEnd <- AsitePositions + 2 + 3*3 + digest3 # 2 nt for Asite codon + 3 codons + 3' digest length
   # 5. extract footprint sequences
   footprints <- substring(text=ntSequence, first=footprintStart, last=footprintEnd)
+  # 6. convert to "footprint" object
+  ids <- unlist(mapply(seq.int, to=riboCounts))
   reads <- mapply(footprint, sequence=footprints, ASite=Asites, transcript=transcriptName,
-                  digest5=digest5, digest3=digest3)
+                  digest5=digest5, digest3=digest3, id=ids)
   return(reads)
 }
 
