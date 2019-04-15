@@ -178,7 +178,7 @@ save(yeast_yeast_rho, yeast_yeast_pi,
 for(i in 1:nParts) {
   print(paste("Part", i, "of", nParts))
   partName <- paste0("yeast_yeast_yeast_part", i)
-  part_filename <- paste0("yeast_yeastCodons_yeastDelta_80Mreads_part", i)
+  part_filename <- paste0("yeast_yeastCodons_uniformDelta_80Mreads_part", i)
   assign(partName, 
          value=simFootprints(yeast_yeast, nRibosomes=partSize, 
                              rhos=yeast_yeast_rho, pis=yeast_yeast_pi,
