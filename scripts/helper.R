@@ -17,7 +17,7 @@ readFAfile <- function(faFile, pad5, pad3) {
                      startLine <- transcriptStartLines[x]+1
                      endLine <- transcriptStartLines[x+1]-1
                      transcriptSequence <- paste(rawFile[startLine:endLine], collapse="")
-                     nCodons <- floor((nchar(transcriptSequence)-pad5-pad3)/3)
+                     nCodons <- floor((nchar(transcriptSequence))/3)
                      sequenceOffset <- pad5 %% 3
                      codonSequence <- substring(transcriptSequence, 
                                                 first=(3*(1:nCodons-1)+1)+sequenceOffset, 

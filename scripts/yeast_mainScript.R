@@ -3,10 +3,6 @@ rm(list=ls())
 # load scripts ------------------------------------------------------------
 
 library(parallel)
-library(httr)
-set_config( config( ssl_verifypeer = 0L ) )
-devtools::install_github("krlmlr/ulimit")
-ulimit::memory_limit(4000) #4000 is the memory requested/required in Mb
 
 scriptDir <- "."
 outputDir <- "../outputs"
