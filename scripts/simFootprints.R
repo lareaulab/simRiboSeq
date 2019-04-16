@@ -43,7 +43,7 @@ digest_transcript <- function(codonSequence, riboCounts, transcriptName, delta5,
   # 5. extract footprint sequences
   footprints <- substring(text=ntSequence, first=footprintStart, last=footprintEnd)
   # 6. convert to "footprint" object
-  ids <- unlist(mapply(seq.int, to=riboCounts))
+  ids <- unlist(mapply(seq.int, to=length(footprints)))
   reads <- mapply(footprint, sequence=footprints, ASite=Asites, transcript=transcriptName,
                   digest5=digest5, digest3=digest3, id=ids)
   return(reads)

@@ -1,12 +1,12 @@
 # leave-one-out analysis of codon position contributions
 
-expt = "yeast_uniformCodons"
+expt = "yeast_yeastCodons"
 
 resultsDir <- "/mnt/lareaulab/amok/iXnos/results"
 
 leaveout_fname = file.path(resultsDir, expt, "leaveout_series/leaveout_corrs.txt")
 full_fname = file.path(resultsDir, expt, "feat_neighborhood_series/feat_neighborhood_corrs.txt")
-out_fname = paste0(expt, "choros_codoncorrs_", ".pdf")
+out_fname = file.path("/mnt/lareaulab/amok/simRiboSeq/outputs",paste0(expt, "_codoncorrs", ".pdf"))
 
 full.name = "full_cod_n7p5_nt_n21p17"
 
