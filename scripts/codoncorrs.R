@@ -1,6 +1,11 @@
 # leave-one-out analysis of codon position contributions
 
-expt = "yeast_yeastCodons"
+# expt <- "yeast_uniformCodons_noBias"
+# expt <- "yeast_uniformCodons"
+# expt <- "yeast_uniformCodons_corrected"
+# expt <- "yeast_yeastCodons_noBias"
+# expt <- "yeast_yeastCodons"
+expt <- "yeast_yeastCodons_corrected"
 
 resultsDir <- "/mnt/lareaulab/amok/iXnos/results"
 
@@ -31,7 +36,8 @@ par( oma = c(0,1.5,1,0) )
 par( lwd = 0.75 )
 par( xpd = NA )
 
-yMax <- 0.5
+# summary(full.mean-leaveout.mean)
+yMax <- ceiling(10*summary(full.mean-leaveout.mean)["Max."])/10
 
 plot( NA, 
       xlim = c( 1, 15 ),

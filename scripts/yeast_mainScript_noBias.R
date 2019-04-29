@@ -86,46 +86,46 @@ names(n3bias) <- codons
 
 # simulation 1 ------------------------------------------------------------
 
-set.seed(107)
-
-# 1. simulate transcriptome
-# yeast genome
-# uniform codon distribution
-yeast_uniform <- readFAfile(file.path(outputDir, "yeast_uniformCodons.fa"), pad5=3*6, pad3=3*4)
-
-# 2. simulate ribosome distributions
-# weinberg data for expt lengths, abundances, codon TE
-load(file.path(outputDir, "yeast_uniformCodons_rho_pi.Rda"))
-
-# 3. simulate footprints
-# uniform delta5, delta3
-# no ligation or circularization bias
-# minSize=13, maxSize=36
-
-system('mkdir ../outputs/yeast_uniformCodons_uniformDelta_noBias_80Mreads')
-
-exptDir <- "yeast_uniformCodons_uniformDelta_noBias_80Mreads"
-
-minSize <- 13
-maxSize <- 36
-
-for(i in 1:nParts) {
-  print(paste("Part", i, "of", nParts))
-  partName <- paste0("yeast_uniform_uniform_part", i)
-  part_filename <- paste0("yeast_uniformCodons_uniformDelta_noBias_80Mreads_part", i)
-  assign(partName, 
-         value=simFootprints(yeast_uniform, nRibosomes=partSize, 
-                             rhos=yeast_uniform_rho, pis=yeast_uniform_pi,
-                             delta5=delta5_uniform, delta3=delta3_uniform,
-                             ligBias=n3bias, circBias=p5bias,
-                             digest_transcript=digest_transcript,
-                             minSize=minSize, maxSize=maxSize))
-  writeFootprintsFA(get(partName),
-                    file.path(outputDir, exptDir, paste0(part_filename, ".fa")))
-  save(list=partName, 
-       file=file.path(outputDir, exptDir, paste0(part_filename, ".Rda")))
-  rm(list=partName)
-}
+# set.seed(107)
+# 
+# # 1. simulate transcriptome
+# # yeast genome
+# # uniform codon distribution
+# yeast_uniform <- readFAfile(file.path(outputDir, "yeast_uniformCodons.fa"), pad5=3*6, pad3=3*4)
+# 
+# # 2. simulate ribosome distributions
+# # weinberg data for expt lengths, abundances, codon TE
+# load(file.path(outputDir, "yeast_uniformCodons_rho_pi.Rda"))
+# 
+# # 3. simulate footprints
+# # uniform delta5, delta3
+# # no ligation or circularization bias
+# # minSize=13, maxSize=36
+# 
+# system('mkdir ../outputs/yeast_uniformCodons_uniformDelta_noBias_80Mreads')
+# 
+# exptDir <- "yeast_uniformCodons_uniformDelta_noBias_80Mreads"
+# 
+# minSize <- 13
+# maxSize <- 36
+# 
+# for(i in 1:nParts) {
+#   print(paste("Part", i, "of", nParts))
+#   partName <- paste0("yeast_uniform_uniform_part", i)
+#   part_filename <- paste0("yeast_uniformCodons_uniformDelta_noBias_80Mreads_part", i)
+#   assign(partName, 
+#          value=simFootprints(yeast_uniform, nRibosomes=partSize, 
+#                              rhos=yeast_uniform_rho, pis=yeast_uniform_pi,
+#                              delta5=delta5_uniform, delta3=delta3_uniform,
+#                              ligBias=n3bias, circBias=p5bias,
+#                              digest_transcript=digest_transcript,
+#                              minSize=minSize, maxSize=maxSize))
+#   writeFootprintsFA(get(partName),
+#                     file.path(outputDir, exptDir, paste0(part_filename, ".fa")))
+#   save(list=partName, 
+#        file=file.path(outputDir, exptDir, paste0(part_filename, ".Rda")))
+#   rm(list=partName)
+# }
 
 # simulation 2 ------------------------------------------------------------
 
@@ -158,7 +158,7 @@ for(i in 1:nParts) {
   part_filename <- paste0("yeast_yeastCodons_uniformDelta_noBias_80Mreads_part", i)
   assign(partName, 
          value=simFootprints(yeast_yeast, nRibosomes=partSize, 
-                             rhos=yeast_uniform_rho, pis=yeast_uniform_pi,
+                             rhos=yeast_yeast_rho, pis=yeast_yeast_pi,
                              delta5=delta5_uniform, delta3=delta3_uniform,
                              ligBias=n3bias, circBias=p5bias,
                              digest_transcript=digest_transcript,

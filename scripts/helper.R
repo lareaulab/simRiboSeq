@@ -81,7 +81,7 @@ writeTranscriptomeFA <- function(transcripts, outFile) {
 writeFootprintsFA <- function(footprints, outFile) {
   ## write output from simFootprints() to .fa file
   # footprints: list of "footprints" objects
-  # outFile: filename for output .fa file
+  # outFile: character; filename for output .fa file
   nFootprints <- length(footprints)
   outputFA <- rep(NULL, 2*nFootprints)
   footprintNames <- sapply(footprints, function(x) paste(x@transcript, x@ASite, x@id, sep="_"))
@@ -89,4 +89,20 @@ writeFootprintsFA <- function(footprints, outFile) {
   outputFA[2*(1:nFootprints)-1] <- paste0(">", footprintNames)
   outputFA[2*(1:nFootprints)] <- footprintSequences
   writeLines(outputFA, con=outFile, sep="\n")
+}
+
+readCtsByCodon <- function(filename) {
+  ## read in cts_by_codon file (output by iXnos)
+  # filename: character; path to cts_by_codon file
+  rawFile <- readLines(filename)
+  output <- lapply(rawFile,
+                   function(x) {
+                     txt <- strsplit(x, split="\t")[[1]]
+                     return(txt[2:length(txt)]) # return only counts
+                   })
+  names(output) <- sapply(rawFile,
+                          function(x) {
+                            strsplit(x, split="\t")[[1]][1] # pull transcript names
+                          })
+  return(output)
 }
