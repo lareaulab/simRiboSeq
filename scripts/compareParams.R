@@ -39,7 +39,7 @@ uniform_rho <- data.frame(simulation=yeast_uniform_rho,
 uniform_rho_plot <- ggplot(uniform_rho, aes(simulation, choros)) + 
   geom_point(alpha=0.1, size=0.5) + 
   theme_classic() +
-  ggtitle(expression(pi),
+  ggtitle(expression(rho),
           subtitle=paste0("correlation = ", 
                           signif(cor(uniform_rho$simulation, uniform_rho$choros), digits=2)))
 # pi
@@ -52,7 +52,7 @@ uniform_pi_plot <- ggplot(uniform_pi, aes(simulation, choros)) +
   geom_bin2d(bins=50) + 
   scale_fill_gradient(low="white", high="steelblue") +
   theme_classic() +
-  ggtitle(expression(rho),
+  ggtitle(expression(pi),
           subtitle=paste0("correlation = ", 
                           signif(cor(uniform_pi$simulation, uniform_pi$choros,
                                      use="complete.obs"), digits=2)))
@@ -82,7 +82,7 @@ yeast_rho <- data.frame(simulation=yeast_yeast_rho,
 yeast_rho_plot <- ggplot(yeast_rho, aes(simulation, choros)) + 
   geom_point(alpha=0.1, size=0.5) + 
   theme_classic() +
-  ggtitle(expression(pi),
+  ggtitle(expression(rho),
           subtitle=paste0("correlation = ", 
                           signif(cor(yeast_rho$simulation, yeast_rho$choros), digits=2)))
 # pi
@@ -92,10 +92,10 @@ yeast_pi <- data.frame(simulation=unlist(yeast_yeast_pi),
                          choros=unlist(yeast_choros_pi))
 yeast_pi$choros[is.infinite(yeast_pi$choros)] <- NA
 yeast_pi_plot <- ggplot(yeast_pi, aes(simulation, choros)) + 
-  geom_bin2d(bins=50) + 
+  geom_bin2d(bins=50) + ylim(-17, -3) +
   scale_fill_gradient(low="white", high="steelblue") +
   theme_classic() +
-  ggtitle(expression(rho),
+  ggtitle(expression(pi),
           subtitle=paste0("correlation = ", 
                           signif(cor(yeast_pi$simulation, yeast_pi$choros,
                                      use="complete.obs"), digits=2)))
