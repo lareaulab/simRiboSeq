@@ -32,14 +32,14 @@ digest_transcript <- function(codonSequence, riboCounts, transcriptName, delta5,
   # 1. convert vector of codons to vector of nucleotides
   ntSequence <- paste(codonSequence, collapse="")
   # 2. convert riboCounts to numeric vector of A site coordinates (in nucleotide units)
-  Asites <- unlist(mapply(rep, seq.int(length(riboCounts)), riboCounts))
-  AsitePositions <- 3*(Asites-1) + startPosition
+  Asites <- unlist(mapply(rep, seq.int(length(riboCounts)), riboCounts)) - 1
+  AsitePositions <- 3*(Asites) + startPosition
   # 3. generate digest lengths
   digest5 <- sample(as.numeric(names(delta5)), size=length(AsitePositions), prob=delta5, replace=T)
   digest3 <- sample(as.numeric(names(delta3)), size=length(AsitePositions), prob=delta3, replace=T)
   # 4. generate footprint start and stop positions
-  footprintStart <- AsitePositions - 3*5 - digest5 # 5 codons + 5' digest length
-  footprintEnd <- AsitePositions + 2 + 3*3 + digest3 # 2 nt for Asite codon + 3 codons + 3' digest length
+  footprintStart <- AsitePositions - digest5 # 5' digest length
+  footprintEnd <- AsitePositions + 2 + digest3 # 2 nt for Asite codon + 3' digest length
   # 5. extract footprint sequences
   footprints <- substring(text=ntSequence, first=footprintStart, last=footprintEnd)
   # 6. convert to "footprint" object

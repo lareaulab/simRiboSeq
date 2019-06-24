@@ -23,9 +23,9 @@ uniformCodonDist <- rep(1, length(codons))/length(codons)
 names(uniformCodonDist) <- codons
 # digest()
 delta5_uniform <- rep(1, 3)/3
-names(delta5_uniform) <- as.character(0:2)
+names(delta5_uniform) <- as.character(15:17)
 delta3_uniform <- rep(1, 3)/3
-names(delta3_uniform) <- as.character(0:2)
+names(delta3_uniform) <- as.character(9:11)
 minSize <- 27
 maxSize <- 31
 # nReads_weinberg <- 72928017
@@ -47,18 +47,6 @@ yeastLengths <- lengths(yeastFAlist) - floor(yeast_pad5/3) - floor(yeast_pad3/3)
 yeastCodonCounts <- countCodons(yeastFAlist, codons, yeast_pad5, yeast_pad3)
 yeastCodonDist <- rowSums(yeastCodonCounts)/sum(yeastCodonCounts)
 rm(yeastFAlist)
-
-# ## human genome params for simTranscriptome()
-# humanFAfile <- "gencode.v22.transcript.13cds10.fa"
-# human_pad5 <- 13
-# human_pad3 <- 10
-# humanFAlist <- readFAfile(file.path(refDir, humanFAfile),
-#                           human_pad5, human_pad3)
-# # filter out transcripts w/ < 20 codons + padding
-# humanFAlist <- humanFAlist[lengths(humanFAlist) > (human_pad5+human_pad3+20)] 
-# humanLengths <- lengths(humanFAlist) - floor(human_pad5/3) - floor(human_pad3/3)
-# humanCodonCounts <- countCodons(humanFAlist, codons, human_pad5, human_pad3)
-# humanCodonDist <- rowSums(humanCodonCounts)/sum(humanCodonCounts)
 
 ## weinberg expt: gene lengths and abundances for simPi()
 weinberg_file <- "cts_by_codon.size.27.31.txt"
@@ -83,13 +71,13 @@ names(weinberg_codonTE) <- c(weinberg_codonScores$codon, weinberg_stopCodons)
 green_biasFile <- "codon_scores.tsv"
 green_biasScores <- read.table(file.path(refDir, green_biasFile))
 colnames(green_biasScores) <- as.character(seq.int(from=-5, length.out=ncol(green_biasScores)))
-green_p5bias <- green_biasScores[,"-5"]
+green_p5bias <- exp(green_biasScores[,"-5"])
 names(green_p5bias) <- sort(codons)
-green_p5bias <- (green_p5bias+1)/(max(green_p5bias, na.rm=T)+1)
+green_p5bias <- green_p5bias/max(green_p5bias, na.rm=T)
 green_p5bias[is.na(green_p5bias)] <- 0
-green_n3bias <- green_biasScores[,"3"]
+green_n3bias <- exp(green_biasScores[,"3"])
 names(green_n3bias) <- sort(codons)
-green_n3bias <- (green_n3bias+1)/(max(green_n3bias, na.rm=T)+1)
+green_n3bias <- green_n3bias/max(green_n3bias, na.rm=T)
 green_n3bias[is.na(green_n3bias)] <- 0
 # par(mfrow=c(2,1))
 # plot(density(green_biasScores[,"-5"], na.rm=T), main="p5 bias scores from green iXnos")
@@ -97,7 +85,15 @@ green_n3bias[is.na(green_n3bias)] <- 0
 # plot(density(green_biasScores[,"3"], na.rm=T), main="n3 bias scores from green iXnos")
 # plot(density(green_n3bias), main="scaled n3 probabilities")
 
+## bias scores for ligate() & circularize() --> uniform bias
+p5bias <- rep(1, length(codons))
+names(p5bias) <- codons
+n3bias <- rep(1, length(codons))
+names(n3bias) <- codons
+
 # simulation 1 ------------------------------------------------------------
+
+### yeast, uniform codon distribution, uniform deltas, no bias
 
 set.seed(99)
 
@@ -122,20 +118,40 @@ save(yeast_uniform_rho, yeast_uniform_pi,
 # 3. simulate footprints
 # uniform delta5, delta3
 # minSize=27, maxSize=31
-# green data for ligBias (3') and circBias (5')
-
-# # test for timing
-# system.time({
-#   simFootprints(yeast_uniform, 1e6, rhos=yeast_uniform_rho, pis=yeast_uniform_pi,
-#                 delta5=delta5_uniform, delta3=delta3_uniform,
-#                 ligBias=green_n3bias, circBias=green_p5bias,
-#                 digest_transcript=digest_transcript)
-# })
+# no biases for ligBias (3') and circBias (5')
 
 for(i in 1:nParts) {
   print(paste("Part", i, "of", nParts))
-  partName <- paste0("yeast_uniform_uniform_part", i)
-  part_filename <- paste0("yeast_uniformCodons_uniformDelta_80Mreads_part", i)
+  partName <- paste0("yeast_uniform_uniform_noBias_part", i)
+  part_filename <- paste0("yeast_uniformCodons_uniformDelta_noBias_80Mreads_part", i)
+  assign(partName, 
+         value=simFootprints(yeast_uniform, nRibosomes=partSize, 
+                             rhos=yeast_uniform_rho, pis=yeast_uniform_pi,
+                             delta5=delta5_uniform, delta3=delta3_uniform,
+                             ligBias=n3bias, circBias=p5bias,
+                             digest_transcript=digest_transcript))
+  writeFootprintsFA(get(partName),
+                    file.path(outputDir, paste0(part_filename, ".fa")))
+  save(list=partName, 
+       file=file.path(outputDir, paste0(part_filename, ".Rda")))
+  rm(list=partName)
+}
+
+# simulation 2 ------------------------------------------------------------
+
+### yeast, uniform codon distribution, uniform deltas, green bias
+
+set.seed(72)
+
+# 3. simulate footprints
+# uniform delta5, delta3
+# minSize=27, maxSize=31
+# green data for ligBias (3') and circBias (5')
+
+for(i in 1:nParts) {
+  print(paste("Part", i, "of", nParts))
+  partName <- paste0("yeast_uniform_uniform_withBias_part", i)
+  part_filename <- paste0("yeast_uniformCodons_uniformDelta_withBias_80Mreads_part", i)
   assign(partName, 
          value=simFootprints(yeast_uniform, nRibosomes=partSize, 
                              rhos=yeast_uniform_rho, pis=yeast_uniform_pi,
@@ -149,7 +165,9 @@ for(i in 1:nParts) {
   rm(list=partName)
 }
 
-# simulation 2 ------------------------------------------------------------
+# simulation 3 ------------------------------------------------------------
+
+### yeast, yeast codon distribution, uniform deltas, no bias
 
 set.seed(35)
 
@@ -174,11 +192,40 @@ save(yeast_yeast_rho, yeast_yeast_pi,
 # 3. simulate footprints
 # uniform delta5, delta3
 # minSize=27, maxSize=31
-# green data for ligBias (3') and circBias (5')
+# no biases for ligBias (3') and circBias (5')
+
 for(i in 1:nParts) {
   print(paste("Part", i, "of", nParts))
-  partName <- paste0("yeast_yeast_yeast_part", i)
-  part_filename <- paste0("yeast_yeastCodons_uniformDelta_80Mreads_part", i)
+  partName <- paste0("yeast_yeast_uniform_noBias_part", i)
+  part_filename <- paste0("yeast_yeastCodons_uniformDelta_noBias_80Mreads_part", i)
+  assign(partName, 
+         value=simFootprints(yeast_yeast, nRibosomes=partSize, 
+                             rhos=yeast_yeast_rho, pis=yeast_yeast_pi,
+                             delta5=delta5_uniform, delta3=delta3_uniform,
+                             ligBias=n3bias, circBias=p5bias,
+                             digest_transcript=digest_transcript))
+  writeFootprintsFA(get(partName),
+                    file.path(outputDir, paste0(part_filename, ".fa")))
+  save(list=partName, 
+       file=file.path(outputDir, paste0(part_filename, ".Rda")))
+  rm(list=partName)
+}
+
+# simulation 4 ------------------------------------------------------------
+
+### yeast, yeast codon distribution, uniform deltas, with bias
+
+set.seed(17)
+
+# 3. simulate footprints
+# uniform delta5, delta3
+# minSize=27, maxSize=31
+# green data for ligBias (3') and circBias (5')
+
+for(i in 1:nParts) {
+  print(paste("Part", i, "of", nParts))
+  partName <- paste0("yeast_yeast_uniform_withBias_part", i)
+  part_filename <- paste0("yeast_yeastCodons_uniformDelta_withBias_80Mreads_part", i)
   assign(partName, 
          value=simFootprints(yeast_yeast, nRibosomes=partSize, 
                              rhos=yeast_yeast_rho, pis=yeast_yeast_pi,

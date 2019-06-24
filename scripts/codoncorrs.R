@@ -5,7 +5,9 @@
 # expt <- "yeast_uniformCodons_corrected"
 # expt <- "yeast_yeastCodons_noBias"
 # expt <- "yeast_yeastCodons"
-expt <- "yeast_yeastCodons_corrected"
+# expt <- "yeast_yeastCodons_corrected"
+# expt <- "yeast_uniformCodons_noBias_corrected"
+expt <- "yeast_yeastCodons_noBias_corrected"
 
 resultsDir <- "/mnt/lareaulab/amok/iXnos/results"
 
