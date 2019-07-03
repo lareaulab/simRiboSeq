@@ -17,503 +17,366 @@ Type 'demo()' for some demos, 'help()' for on-line help, or
 'help.start()' for an HTML browser interface to help.
 Type 'q()' to quit R.
 
-> library(foreach)
-> library(doParallel)
-Loading required package: iterators
-Loading required package: parallel
+[Previously saved workspace restored]
+
+> rm(list=ls())
 > 
-> setwd("~/simRiboSeq/outputs/")
+> outputDir <- "~/simRiboSeq/outputs/"
 > 
-> faFiles <- grep(".*part.*Rda", list.files(), value=T)
-> faFiles <- faFiles[-c(1:5)]
+> expts <- c("yeast_uniformCodons_uniformDelta_noBias",
++            "yeast_uniformCodons_uniformDelta_withBias",
++            "yeast_yeastCodons_uniformDelta_noBias",
++            "yeast_yeastCodons_uniformDelta_withBias")
 > 
-> nCores <- parallel::detectCores()-10
-> cl <- makeCluster(nCores)
-> registerDoParallel(cl)
-> 
-> foreach(x=1:length(faFiles)) %dopar% {
-+   print(paste("File", x, "of", length(faFiles)))
-+   load(file=faFiles[x])
-+   objName <- sub("Delta_80Mreads", "", sub("Codons", "", sub(".Rda", "", faFiles[x])))
-+   nFootprints <- length(get(objName))
-+   outputFA <- rep(NULL, 2*nFootprints)
-+   footprintNames <- sapply(get(objName), function(x) paste(x@transcript, x@ASite, sep="_"))
-+   footprintNames <- paste(footprintNames, seq.int(nFootprints), sep="_")
-+   footprintSequences <- sapply(get(objName), function(x) x@sequence)
-+   outputFA[2*(1:nFootprints)-1] <- paste0(">", footprintNames)
-+   outputFA[2*(1:nFootprints)] <- footprintSequences
-+   outFile <- sub(".Rda", ".fa", faFiles[x])
-+   writeLines(outputFA, con=outFile, sep="\n")
-+   rm(list=objName)
+> for(expt in expts) {
++   faFiles <- grep("Rda", list.files(file.path(outputDir, expt)), value=T)
++   nFootprints <- 0
++   outFile <- file.path(outputDir, paste0(expt, ".fa"))
++   for(part in faFiles) {
++     print(paste("Loading", part))
++     load(file=file.path(outputDir, expt, part))
++     objName <- sub("Codons", "", sub("Delta", "", sub("80Mreads_", "", sub(".Rda", "", part))))
++     nNewFootprints <- length(get(objName))
++     outputFA <- rep(NULL, 2*nNewFootprints)
++     footprintNames <- sapply(get(objName), 
++                              function(x) {
++                                paste(x@transcript, x@ASite, 
++                                      "d5", x@digest5, "d3", x@digest3, 
++                                      sep="_")
++                              })
++     footprintNames <- paste(footprintNames, 
++                             seq.int(from=nFootprints+1, length.out=nNewFootprints),
++                             sep="_")
++     footprintSequences <- sapply(get(objName), function(x) x@sequence)
++     outputFA[2*(1:nNewFootprints)-1] <- paste0(">", footprintNames)
++     outputFA[2*(1:nNewFootprints)] <- footprintSequences
++     cat(outputFA, file=outFile, sep="\n", append=T)
++     rm(list=objName)
++     nFootprints <- nFootprints + nNewFootprints
++   }
 + }
-[[1]]
-NULL
-
-[[2]]
-NULL
-
-[[3]]
-NULL
-
-[[4]]
-NULL
-
-[[5]]
-NULL
-
-[[6]]
-NULL
-
-[[7]]
-NULL
-
-[[8]]
-NULL
-
-[[9]]
-NULL
-
-[[10]]
-NULL
-
-[[11]]
-NULL
-
-[[12]]
-NULL
-
-[[13]]
-NULL
-
-[[14]]
-NULL
-
-[[15]]
-NULL
-
-[[16]]
-NULL
-
-[[17]]
-NULL
-
-[[18]]
-NULL
-
-[[19]]
-NULL
-
-[[20]]
-NULL
-
-[[21]]
-NULL
-
-[[22]]
-NULL
-
-[[23]]
-NULL
-
-[[24]]
-NULL
-
-[[25]]
-NULL
-
-[[26]]
-NULL
-
-[[27]]
-NULL
-
-[[28]]
-NULL
-
-[[29]]
-NULL
-
-[[30]]
-NULL
-
-[[31]]
-NULL
-
-[[32]]
-NULL
-
-[[33]]
-NULL
-
-[[34]]
-NULL
-
-[[35]]
-NULL
-
-[[36]]
-NULL
-
-[[37]]
-NULL
-
-[[38]]
-NULL
-
-[[39]]
-NULL
-
-[[40]]
-NULL
-
-[[41]]
-NULL
-
-[[42]]
-NULL
-
-[[43]]
-NULL
-
-[[44]]
-NULL
-
-[[45]]
-NULL
-
-[[46]]
-NULL
-
-[[47]]
-NULL
-
-[[48]]
-NULL
-
-[[49]]
-NULL
-
-[[50]]
-NULL
-
-[[51]]
-NULL
-
-[[52]]
-NULL
-
-[[53]]
-NULL
-
-[[54]]
-NULL
-
-[[55]]
-NULL
-
-[[56]]
-NULL
-
-[[57]]
-NULL
-
-[[58]]
-NULL
-
-[[59]]
-NULL
-
-[[60]]
-NULL
-
-[[61]]
-NULL
-
-[[62]]
-NULL
-
-[[63]]
-NULL
-
-[[64]]
-NULL
-
-[[65]]
-NULL
-
-[[66]]
-NULL
-
-[[67]]
-NULL
-
-[[68]]
-NULL
-
-[[69]]
-NULL
-
-[[70]]
-NULL
-
-[[71]]
-NULL
-
-[[72]]
-NULL
-
-[[73]]
-NULL
-
-[[74]]
-NULL
-
-[[75]]
-NULL
-
-[[76]]
-NULL
-
-[[77]]
-NULL
-
-[[78]]
-NULL
-
-[[79]]
-NULL
-
-[[80]]
-NULL
-
-[[81]]
-NULL
-
-[[82]]
-NULL
-
-[[83]]
-NULL
-
-[[84]]
-NULL
-
-[[85]]
-NULL
-
-[[86]]
-NULL
-
-[[87]]
-NULL
-
-[[88]]
-NULL
-
-[[89]]
-NULL
-
-[[90]]
-NULL
-
-[[91]]
-NULL
-
-[[92]]
-NULL
-
-[[93]]
-NULL
-
-[[94]]
-NULL
-
-[[95]]
-NULL
-
-[[96]]
-NULL
-
-[[97]]
-NULL
-
-[[98]]
-NULL
-
-[[99]]
-NULL
-
-[[100]]
-NULL
-
-[[101]]
-NULL
-
-[[102]]
-NULL
-
-[[103]]
-NULL
-
-[[104]]
-NULL
-
-[[105]]
-NULL
-
-[[106]]
-NULL
-
-[[107]]
-NULL
-
-[[108]]
-NULL
-
-[[109]]
-NULL
-
-[[110]]
-NULL
-
-[[111]]
-NULL
-
-[[112]]
-NULL
-
-[[113]]
-NULL
-
-[[114]]
-NULL
-
-[[115]]
-NULL
-
-[[116]]
-NULL
-
-[[117]]
-NULL
-
-[[118]]
-NULL
-
-[[119]]
-NULL
-
-[[120]]
-NULL
-
-[[121]]
-NULL
-
-[[122]]
-NULL
-
-[[123]]
-NULL
-
-[[124]]
-NULL
-
-[[125]]
-NULL
-
-[[126]]
-NULL
-
-[[127]]
-NULL
-
-[[128]]
-NULL
-
-[[129]]
-NULL
-
-[[130]]
-NULL
-
-[[131]]
-NULL
-
-[[132]]
-NULL
-
-[[133]]
-NULL
-
-[[134]]
-NULL
-
-[[135]]
-NULL
-
-[[136]]
-NULL
-
-[[137]]
-NULL
-
-[[138]]
-NULL
-
-[[139]]
-NULL
-
-[[140]]
-NULL
-
-[[141]]
-NULL
-
-[[142]]
-NULL
-
-[[143]]
-NULL
-
-[[144]]
-NULL
-
-[[145]]
-NULL
-
-[[146]]
-NULL
-
-[[147]]
-NULL
-
-[[148]]
-NULL
-
-[[149]]
-NULL
-
-[[150]]
-NULL
-
-[[151]]
-NULL
-
-[[152]]
-NULL
-
-[[153]]
-NULL
-
-[[154]]
-NULL
-
-[[155]]
-NULL
-
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part1.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part10.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part11.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part12.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part13.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part14.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part15.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part16.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part17.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part18.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part19.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part2.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part20.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part21.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part22.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part23.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part24.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part25.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part26.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part27.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part28.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part29.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part3.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part30.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part31.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part32.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part33.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part34.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part35.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part36.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part37.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part38.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part39.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part4.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part40.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part41.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part42.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part43.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part44.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part45.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part46.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part47.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part48.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part49.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part5.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part50.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part51.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part52.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part53.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part54.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part55.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part56.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part57.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part58.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part59.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part6.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part60.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part61.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part62.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part63.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part64.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part65.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part66.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part67.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part68.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part69.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part7.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part70.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part71.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part72.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part73.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part74.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part75.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part76.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part77.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part78.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part79.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part8.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part80.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_noBias_80Mreads_part9.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part1.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part10.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part11.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part12.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part13.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part14.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part15.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part16.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part17.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part18.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part19.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part2.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part20.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part21.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part22.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part23.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part24.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part25.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part26.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part27.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part28.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part29.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part3.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part30.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part31.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part32.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part33.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part34.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part35.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part36.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part37.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part38.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part39.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part4.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part40.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part41.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part42.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part43.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part44.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part45.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part46.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part47.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part48.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part49.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part5.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part50.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part51.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part52.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part53.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part54.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part55.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part56.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part57.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part58.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part59.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part6.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part60.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part61.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part62.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part63.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part64.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part65.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part66.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part67.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part68.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part69.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part7.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part70.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part71.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part72.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part73.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part74.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part75.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part76.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part77.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part78.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part79.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part8.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part80.Rda"
+[1] "Loading yeast_uniformCodons_uniformDelta_withBias_80Mreads_part9.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part1.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part10.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part11.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part12.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part13.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part14.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part15.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part16.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part17.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part18.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part19.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part2.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part20.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part21.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part22.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part23.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part24.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part25.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part26.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part27.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part28.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part29.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part3.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part30.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part31.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part32.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part33.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part34.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part35.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part36.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part37.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part38.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part39.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part4.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part40.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part41.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part42.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part43.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part44.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part45.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part46.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part47.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part48.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part49.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part5.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part50.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part51.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part52.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part53.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part54.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part55.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part56.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part57.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part58.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part59.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part6.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part60.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part61.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part62.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part63.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part64.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part65.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part66.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part67.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part68.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part69.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part7.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part70.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part71.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part72.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part73.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part74.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part75.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part76.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part77.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part78.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part79.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part8.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part80.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_noBias_80Mreads_part9.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part1.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part10.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part11.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part12.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part13.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part14.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part15.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part16.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part17.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part18.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part19.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part2.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part20.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part21.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part22.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part23.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part24.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part25.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part26.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part27.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part28.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part29.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part3.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part30.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part31.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part32.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part33.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part34.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part35.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part36.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part37.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part38.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part39.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part4.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part40.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part41.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part42.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part43.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part44.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part45.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part46.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part47.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part48.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part49.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part5.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part50.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part51.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part52.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part53.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part54.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part55.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part56.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part57.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part58.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part59.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part6.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part60.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part61.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part62.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part63.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part64.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part65.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part66.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part67.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part68.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part69.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part7.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part70.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part71.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part72.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part73.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part74.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part75.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part76.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part77.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part78.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part79.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part8.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part80.Rda"
+[1] "Loading yeast_yeastCodons_uniformDelta_withBias_80Mreads_part9.Rda"
 > 
-> stopCluster(cl)
-> 
+> quit(save="no")
 > proc.time()
-   user  system elapsed 
-  0.656   0.150 198.096 
+     user    system   elapsed 
+ 9223.946  1011.078 10427.136 

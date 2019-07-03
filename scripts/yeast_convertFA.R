@@ -1,50 +1,38 @@
-library(foreach)
-library(doParallel)
+rm(list=ls())
 
-setwd("~/simRiboSeq/outputs/")
+outputDir <- "~/simRiboSeq/outputs/"
 
-faFiles <- grep(".*part.*Rda", list.files(), value=T)
-faFiles <- faFiles[-c(1:5)]
+expts <- c("yeast_uniformCodons_uniformDelta_noBias",
+           "yeast_uniformCodons_uniformDelta_withBias",
+           "yeast_yeastCodons_uniformDelta_noBias",
+           "yeast_yeastCodons_uniformDelta_withBias")
 
-nCores <- parallel::detectCores()-10
-cl <- makeCluster(nCores)
-registerDoParallel(cl)
-
-foreach(x=1:length(faFiles)) %dopar% {
-  print(paste("File", x, "of", length(faFiles)))
-  load(file=faFiles[x])
-  objName <- sub("Delta_80Mreads", "", sub("Codons", "", sub(".Rda", "", faFiles[x])))
-  nFootprints <- length(get(objName))
-  outputFA <- rep(NULL, 2*nFootprints)
-  footprintNames <- sapply(get(objName), function(x) paste(x@transcript, x@ASite, sep="_"))
-  footprintNames <- paste(footprintNames, seq.int(nFootprints), sep="_")
-  footprintSequences <- sapply(get(objName), function(x) x@sequence)
-  outputFA[2*(1:nFootprints)-1] <- paste0(">", footprintNames)
-  outputFA[2*(1:nFootprints)] <- footprintSequences
-  outFile <- sub(".Rda", ".fa", faFiles[x])
-  writeLines(outputFA, con=outFile, sep="\n")
-  rm(list=objName)
+for(expt in expts) {
+  faFiles <- grep("Rda", list.files(file.path(outputDir, expt)), value=T)
+  nFootprints <- 0
+  outFile <- file.path(outputDir, paste0(expt, ".fa"))
+  for(part in faFiles) {
+    print(paste("Loading", part))
+    load(file=file.path(outputDir, expt, part))
+    objName <- sub("Codons", "", sub("Delta", "", sub("80Mreads_", "", sub(".Rda", "", part))))
+    nNewFootprints <- length(get(objName))
+    outputFA <- rep(NULL, 2*nNewFootprints)
+    footprintNames <- sapply(get(objName), 
+                             function(x) {
+                               paste(x@transcript, x@ASite, 
+                                     "d5", x@digest5, "d3", x@digest3, 
+                                     sep="_")
+                             })
+    footprintNames <- paste(footprintNames, 
+                            seq.int(from=nFootprints+1, length.out=nNewFootprints),
+                            sep="_")
+    footprintSequences <- sapply(get(objName), function(x) x@sequence)
+    outputFA[2*(1:nNewFootprints)-1] <- paste0(">", footprintNames)
+    outputFA[2*(1:nNewFootprints)] <- footprintSequences
+    cat(outputFA, file=outFile, sep="\n", append=T)
+    rm(list=objName)
+    nFootprints <- nFootprints + nNewFootprints
+  }
 }
 
-stopCluster(cl)
-
-yeastCodonFiles <- grep("yeastCodon.*part.*Rda", list.files(), value=T)
-
-for(x in 1:length(yeastCodonFiles)) {
-  print(paste("File", x, "of", length(yeastCodonFiles)))
-  load(file=yeastCodonFiles[x])
-  objName <- sub("Delta_80Mreads", "", sub("Codons", "", sub(".Rda", "", yeastCodonFiles[x])))
-  fileName <- sub(".Rda", "", sub("yeastDelta", "uniformDelta", yeastCodonFiles[x]))
-  new_objName <- sub("Delta_80Mreads", "", sub("Codons", "", sub(".Rda", "", fileName)))
-  assign(new_objName, get(objName))
-  nFootprints <- length(get(objName))
-  outputFA <- rep(NULL, 2*nFootprints)
-  footprintNames <- sapply(get(objName), function(x) paste(x@transcript, x@ASite, sep="_"))
-  footprintNames <- paste(footprintNames, seq.int(nFootprints), sep="_")
-  footprintSequences <- sapply(get(objName), function(x) x@sequence)
-  outputFA[2*(1:nFootprints)-1] <- paste0(">", footprintNames)
-  outputFA[2*(1:nFootprints)] <- footprintSequences
-  writeLines(outputFA, con=paste0(fileName, ".fa"), sep="\n")
-  save(list=new_objName, file=paste0(fileName, ".Rda"))
-  rm(list=c(new_objName, objName))
-}
+quit(save="no")
