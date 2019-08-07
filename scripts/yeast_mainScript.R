@@ -74,16 +74,20 @@ colnames(green_biasScores) <- as.character(seq.int(from=-5, length.out=ncol(gree
 green_p5bias <- exp(green_biasScores[,"-5"])
 names(green_p5bias) <- sort(codons)
 green_p5bias <- green_p5bias/max(green_p5bias, na.rm=T)
+# green_p5bias <- green_biasScores[,"-5"]
+# green_p5bias <- (green_p5bias+1)/(max(green_p5bias, na.rm=T)+1)
 green_p5bias[is.na(green_p5bias)] <- 0
 green_n3bias <- exp(green_biasScores[,"3"])
 names(green_n3bias) <- sort(codons)
 green_n3bias <- green_n3bias/max(green_n3bias, na.rm=T)
+# green_n3bias <- green_biasScores[,"3"]
+# green_n3bias <- (green_n3bias+1)/(max(green_n3bias, na.rm=T)+1)
 green_n3bias[is.na(green_n3bias)] <- 0
-# par(mfrow=c(2,1))
-# plot(density(green_biasScores[,"-5"], na.rm=T), main="p5 bias scores from green iXnos")
-# plot(density(green_p5bias), main="scaled p5 probabilities")
-# plot(density(green_biasScores[,"3"], na.rm=T), main="n3 bias scores from green iXnos")
-# plot(density(green_n3bias), main="scaled n3 probabilities")
+par(mfrow=c(2,1))
+plot(density(green_biasScores[,"-5"], na.rm=T), main="p5 bias scores from green iXnos")
+plot(density(green_p5bias), main="scaled p5 probabilities")
+plot(density(green_biasScores[,"3"], na.rm=T), main="n3 bias scores from green iXnos")
+plot(density(green_n3bias), main="scaled n3 probabilities")
 
 ## bias scores for ligate() & circularize() --> uniform bias
 p5bias <- rep(1, length(codons))
