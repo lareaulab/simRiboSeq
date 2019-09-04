@@ -14,6 +14,13 @@ genRawProfiles <- function(nRibosomes, rhos, pis) {
   return(rawProfile)
 }
 
+footprint <- setClass("footprint", slots=list(sequence="character",
+                                              transcript="character",
+                                              ASite="numeric",
+                                              digest5="numeric",
+                                              digest3="numeric",
+                                              id="numeric"))
+
 digest_transcript <- function(codonSequence, riboCounts, transcriptName, delta5, delta3) {
   ## generate footprint sequences for individual transcript
   # codonSequence: character vector; codons in transcript
@@ -21,18 +28,15 @@ digest_transcript <- function(codonSequence, riboCounts, transcriptName, delta5,
   # transcriptName: character; name of transcript
   # delta5: named numeric vector; probabilities of 5' digest lengths
   # delta3: named numeric vector; probabilities of 3' digest lengths
-  footprint <- setClass("footprint", slots=list(sequence="character",
-                                                transcript="character",
-                                                ASite="numeric",
-                                                digest5="numeric",
-                                                digest3="numeric",
-                                                id="numeric"))
   startCodon <- which(names(codonSequence)=="0")
   startPosition <- 3*(startCodon-1)+1
   # 1. convert vector of codons to vector of nucleotides
   ntSequence <- paste(codonSequence, collapse="")
   # 2. convert riboCounts to numeric vector of A site coordinates (in nucleotide units)
   Asites <- unlist(mapply(rep, seq.int(length(riboCounts)), riboCounts)) - 1
+  if(length(Asites)==0) {
+    return(NULL)
+  }
   AsitePositions <- 3*(Asites) + startPosition
   # 3. generate digest lengths
   digest5 <- sample(as.numeric(names(delta5)), size=length(AsitePositions), prob=delta5, replace=T)
@@ -96,7 +100,7 @@ getBiasRegion <- function(footprints, region, biasLength) {
 
 ligate <- function(footprints, ligBias) {
   ## apply preferential 3' bias to digested footprints
-  # footprints: character vector; sequences of digested footprints
+  # footprints: list of "footprint" objects
   # ligBias: named numeric vector; probabilties of successful ligation for bias regions
   print("... ... ligating footprints ...")
   biasLength <- nchar(names(ligBias)[1])
@@ -109,18 +113,20 @@ ligate <- function(footprints, ligBias) {
 
 RT <- function(footprints, RTBias) {
   ## add extra, non-templated base at 5' end of digested footprints
-  # footprints: character vector; sequences of digested footprints
+  # footprints: list of "footprint" objects
   # RTBias: named numeric vector, probabilities of adding additional base
   print("... ... reverse transcribing ...")
   bases <- names(RTBias)
   basesToAdd <- sample(bases, size=length(footprints), replace=T, prob=RTBias)
-  footprints <- paste0(basesToAdd, footprints)
+  for(i in (1:length(basesToAdd))[basesToAdd != ""]) {
+    footprints[[i]]@sequence <- paste0(basesToAdd[i], footprints[[i]]@sequence, collapse="")
+  }
   return(footprints)
 }
 
 circularize <- function(footprints, circBias) {
   ## apply preferential 5' bias to digested+ligated footprints
-  # footprints: character vector; sequences of digested+ligated footprints
+  # footprints: list of "footprint" objects
   # circBias: named numeric vector; probabilities of successful circularization for bias regions
   print("... ... circularizing footprints ...")
   biasLength <- nchar(names(circBias)[1])

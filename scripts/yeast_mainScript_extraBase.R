@@ -99,7 +99,7 @@ names(n3bias) <- codons
 
 ## RTBias
 rtBias <- c(0.8, 0.08, 0.04, 0.03, 0.05)
-names(rtBias) <- c("", "A", "C", "G")
+names(rtBias) <- c("", "A", "T", "C", "G")
 
 # simulation 1 ------------------------------------------------------------
 
