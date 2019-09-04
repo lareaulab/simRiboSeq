@@ -107,6 +107,17 @@ ligate <- function(footprints, ligBias) {
   return(footprints)
 }
 
+RT <- function(footprints, RTBias) {
+  ## add extra, non-templated base at 5' end of digested footprints
+  # footprints: character vector; sequences of digested footprints
+  # RTBias: named numeric vector, probabilities of adding additional base
+  print("... ... reverse transcribing ...")
+  bases <- names(RTBias)
+  basesToAdd <- sample(bases, size=length(footprints), replace=T, prob=RTBias)
+  footprints <- paste0(basesToAdd, footprints)
+  return(footprints)
+}
+
 circularize <- function(footprints, circBias) {
   ## apply preferential 5' bias to digested+ligated footprints
   # footprints: character vector; sequences of digested+ligated footprints
@@ -123,7 +134,7 @@ circularize <- function(footprints, circBias) {
 simFootprints <- function(faList, nRibosomes, rhos, pis, 
                           delta5, delta3, minSize=27, maxSize=31, 
                           mc.cores=NULL, digest_transcript,
-                          ligBias, circBias) {
+                          ligBias, RTBias, circBias) {
   ## generate footprint sequences and pass through experimental procedures
   # faList: output list from readFAfile()
   # nRibosomes: scalar; number of ribosomes per expt
@@ -146,6 +157,7 @@ simFootprints <- function(faList, nRibosomes, rhos, pis,
   footprints <- digest(faList, codonCounts, delta5, delta3, minSize, maxSize,
                        digest_transcript=digest_transcript)
   footprints <- ligate(footprints, ligBias)
+  footprints <- RT(footprints, RTBias)
   footprints <- circularize(footprints, circBias)
   print(paste(length(footprints), "of", nRibosomes, 
               "(", round(length(footprints)/nRibosomes*100, digits=2), 
