@@ -111,19 +111,6 @@ ligate <- function(footprints, ligBias) {
   return(footprints)
 }
 
-RT <- function(footprints, RTBias) {
-  ## add extra, non-templated base at 5' end of digested footprints
-  # footprints: list of "footprint" objects
-  # RTBias: named numeric vector, probabilities of adding additional base
-  print("... ... reverse transcribing ...")
-  bases <- names(RTBias)
-  basesToAdd <- sample(bases, size=length(footprints), replace=T, prob=RTBias)
-  for(i in (1:length(basesToAdd))[basesToAdd != ""]) {
-    footprints[[i]]@sequence <- paste0(basesToAdd[i], footprints[[i]]@sequence, collapse="")
-  }
-  return(footprints)
-}
-
 circularize <- function(footprints, circBias) {
   ## apply preferential 5' bias to digested+ligated footprints
   # footprints: list of "footprint" objects
@@ -134,6 +121,19 @@ circularize <- function(footprints, circBias) {
   circProbs <- circBias[match(biasRegions, names(circBias))]
   circ_keep <- sapply(circProbs, function(p) rbinom(1, 1, p))
   footprints <- footprints[circ_keep == 1]
+  return(footprints)
+}
+
+RT <- function(footprints, RTBias) {
+  ## add extra, non-templated base at 5' end of digested footprints
+  # footprints: list of "footprint" objects
+  # RTBias: named numeric vector, probabilities of adding additional base
+  print("... ... reverse transcribing ...")
+  bases <- names(RTBias)
+  basesToAdd <- sample(bases, size=length(footprints), replace=T, prob=RTBias)
+  for(i in (1:length(basesToAdd))[basesToAdd != ""]) {
+    footprints[[i]]@sequence <- paste0(basesToAdd[i], footprints[[i]]@sequence, collapse="")
+  }
   return(footprints)
 }
 
