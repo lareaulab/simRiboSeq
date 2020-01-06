@@ -79,8 +79,34 @@ transcripts <- sort(weinberg_cts_by_transcript, decreasing=T)[1:3]
 scer_transcriptome <- readFAfile(file.path(refDir, "scer.transcripts.20cds20.fa"),
                                  pad5=20, pad3=20)
 transcripts_seq <- scer_transcriptome[match(names(transcripts), names(scer_transcriptome))]
+scer_lengths <- read.table(file.path(refDir, "scer.transcripts.20cds20.lengths.txt"),
+                           col.names=c("transcript", "utr5_length", "cds_length", "utr3_length"))
+transcripts_nCodons <- scer_lengths$cds_length[match(names(transcripts_seq), scer_lengths$transcript)]/3
+transcripts_seq <- lapply(1:3,
+                          function(x) {
+                            transcripts_seq[[x]][1:(transcripts_nCodons[x]+6+5)] # 6x 5' UTR codons + 5x 3' UTR codons
+                          })
+names(transcripts_seq) <- names(transcripts)
 writeTranscriptomeFA(transcripts_seq, 
-                     file.path(outputDir, paste0(exptName, "_transcripts_18cds18.fa")))
+                     file.path(outputDir, "riboViz_transcripts_18cds15.fa"))
+# lengths file
+transcripts_lengths <- scer_lengths[match(names(transcripts), scer_lengths$transcript),]
+transcripts_lengths$utr5_length <- 18
+transcripts_lengths$utr3_length <- 15
+write.table(transcripts_lengths,
+            file.path(outputDir, "riboViz_transcripts_18cds15_lengths.txt"))
+# gff3 file
+gff3_table <- data.frame(seqid=transcripts_lengths$transcript,
+                         source=".",
+                         type="CDS",
+                         start=transcripts_lengths$utr5_length+1,
+                         end=transcripts_lengths$utr5_length+transcripts_lengths$cds_length,
+                         score=".",
+                         strand="+",
+                         phase=".",
+                         attributes=paste0("ID=",transcripts_lengths$transcript))
+write.table(gff3_table,
+            file.path(outputDir, "riboViz_transcripts_18cds15.gff3"))
 
 # # check codon frequencies
 # transcripts_codon_freq <- sapply(codons,
@@ -123,13 +149,14 @@ for(i in 1:nParts) {
                              ligBias=green_n3bias, circBias=green_p5bias,
                              RTBias=noRTbias, digest_transcript=digest_transcript))
   writeFootprintsFA(get(partName),
-                    file.path(outputDir, exptName, paste0(partName, ".fa")))
+                    file.path(outputDir, paste0(exptName, "_footprints"), paste0(partName, ".fa")))
   save(list=partName, 
-       file=file.path(outputDir, exptName, paste0(partName, ".Rda")))
+       file=file.path(outputDir, paste0(exptName, "_footprints"), paste0(partName, ".Rda")))
   rm(list=partName)
 }
 
-system(paste0("cat ", file.path(outputDir, exptName), "/*.fa > ", file.path(outputDir), "/", exptName, ".fa"))
+system(paste0("cat ", file.path(outputDir, paste0(exptName, "_footprints")), "/*.fa > ", 
+              file.path(outputDir), "/", exptName, ".fa"))
 
 # 4. reconstruct cts_by_codon
 footprints <- readLines(file.path(outputDir, paste0(exptName, ".fa")))
@@ -194,13 +221,14 @@ for(i in 1:nParts) {
                              ligBias=green_n3bias, circBias=green_p5bias,
                              RTBias=noRTbias, digest_transcript=digest_transcript))
   writeFootprintsFA(get(partName),
-                    file.path(outputDir, exptName, paste0(partName, ".fa")))
+                    file.path(outputDir, paste0(exptName, "_footprints"), paste0(partName, ".fa")))
   save(list=partName, 
-       file=file.path(outputDir, exptName, paste0(partName, ".Rda")))
+       file=file.path(outputDir, paste0(exptName, "_footprints"), paste0(partName, ".Rda")))
   rm(list=partName)
 }
 
-system(paste0("cat ", file.path(outputDir, exptName), "/*.fa > ", file.path(outputDir), "/", exptName, ".fa"))
+system(paste0("cat ", file.path(outputDir, paste0(exptName, "_footprints")), "/*.fa > ", 
+              file.path(outputDir), "/", exptName, ".fa"))
 
 # 4. reconstruct cts_by_codon
 footprints <- readLines(file.path(outputDir, paste0(exptName, ".fa")))
