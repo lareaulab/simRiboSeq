@@ -158,31 +158,27 @@ simFootprints <- function(faList, nRibosomes, rhos, pis,
   print(paste("Number of cores:", mc.cores))
   footprintCluster <- makeCluster(mc.cores)
   nRounds <- 1
-  print(paste("... Round", nRounds, "of simulating footprints"))
-  codonCounts <- genRawProfiles(nRibosomes, rhos, pis)
-  footprints <- digest(faList, codonCounts, delta5, delta3, minSize, maxSize,
-                       digest_transcript=digest_transcript)
-  footprints <- ligate(footprints, ligBias)
-  footprints <- RT(footprints, RTBias)
-  footprints <- circularize(footprints, circBias)
-  print(paste(length(footprints), "of", nRibosomes, 
-              "(", round(length(footprints)/nRibosomes*100, digits=2), 
-              " % ) footprints simulated"))
+  footprints <- c()
   while(length(footprints) < nRibosomes) {
-    nRounds <- nRounds + 1
     print(paste("... Round", nRounds, "of simulating footprints"))
     tmpCodonCounts <- genRawProfiles(nRibosomes, rhos, pis)
-    tmpFootprints <- digest(faList, codonCounts, delta5, delta3, minSize, maxSize,
+    tmpFootprints <- digest(faList, tmpCodonCounts, delta5, delta3, minSize, maxSize,
                             digest_transcript=digest_transcript)
-    tmpFootprints <- ligate(footprints, ligBias)
-    tmpFootprints <- circularize(footprints, circBias)
-    if(length(tmpFootprints) > (nRibosomes-length(footprints))) {
-      tmpFootprints <- sample(tmpFootprints, size=nRibosomes-length(footprints))
+    tmpFootprints <- ligate(tmpFootprints, ligBias)
+    tmpFootprints <- circularize(tmpFootprints, circBias)
+    if(nRounds == 1) {
+      footprints <- tmpFootprints
+    } else {
+      if(length(tmpFootprints) > (nRibosomes-length(footprints))) {
+        tmpFootprints <- sample(tmpFootprints, size=nRibosomes-length(footprints))
+      }
+      footprints <- append(footprints, tmpFootprints)
     }
-    footprints <- append(footprints, tmpFootprints)
     print(paste("...", length(footprints), "of", nRibosomes, 
                 "(", round(length(footprints)/nRibosomes*100, digits=2), 
                 " % ) footprints simulated"))
+    nRounds <- nRounds + 1
+    rm(tmpCodonsCounts, tmpFootprints)
   }
   stopCluster(footprintCluster)
   return(footprints)
