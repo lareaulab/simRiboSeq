@@ -83,7 +83,7 @@ writeFootprintsFA <- function(footprints, outFile) {
   # footprints: list of "footprints" objects
   # outFile: character; filename for output .fa file
   nFootprints <- length(footprints)
-  outputFA <- rep(NULL, 2*nFootprints)
+  outputFA <- rep(NA, 2*nFootprints)
   footprintNames <- sapply(footprints, 
                            function(x) paste(x@transcript, x@ASite, x@digest5, x@digest3, 
                                              x@sequence, x@id, sep="_"))
@@ -91,6 +91,24 @@ writeFootprintsFA <- function(footprints, outFile) {
   outputFA[2*(1:nFootprints)-1] <- paste0(">", footprintNames)
   outputFA[2*(1:nFootprints)] <- footprintSequences
   writeLines(outputFA, con=outFile, sep="\n")
+}
+
+writeFootprintsFQ <- function(footprints, outFile, adaptor="CTGTAGGCACCATCAAT") {
+  ## write output from simFootprints() to .fq file
+  # footprints: list of "footprints" objects
+  # outFile: character; filename for output .fa file
+  # adaptor: character; adaptor sequence
+  nFootprints <- length(footprints)
+  outputFQ <- rep(NA, 4*nFootprints)
+  footprintNames <- sapply(footprints, 
+                           function(x) paste(x@transcript, x@ASite, x@digest5, x@digest3, 
+                                             x@sequence, x@id, sep="_"))
+  footprintSequences <- sapply(footprints, function(x) paste0(x@sequence, adaptor))
+  outputFQ[4*(1:nFootprints)-3] <- paste0("@", footprintNames)
+  outputFQ[4*(1:nFootprints)-2] <- footprintSequences
+  outputFQ[4*(1:nFootprints)-1] <- "+"
+  outputFQ[4*(1:nFootprints)] <- sapply(nchar(footprintSequences), function(x) paste(rep("~", x), collapse=""))
+  writeLines(outputFQ, con=outFile, sep="\n")
 }
 
 readCtsByCodon <- function(filename) {
