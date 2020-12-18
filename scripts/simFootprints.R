@@ -178,7 +178,7 @@ simFootprints <- function(faList, nRibosomes, rhos, pis,
                 "(", round(length(footprints)/nRibosomes*100, digits=2), 
                 " % ) footprints simulated"))
     nRounds <- nRounds + 1
-    rm(tmpCodonsCounts, tmpFootprints)
+    rm(tmpCodonCounts, tmpFootprints)
   }
   stopCluster(footprintCluster)
   return(footprints)
