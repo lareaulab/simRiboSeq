@@ -131,7 +131,8 @@ fp_stats$length <- as.numeric(as.character(fp_stats$length))
 fp_stats$frame <- as.numeric(as.character(fp_stats$frame.16))
 fp_stats$frame.16 <- NULL
 fp_stats$cts <- 1
-fp_stats <- aggregate(cts ~ transcript + cod_idx + length+ frame, data=fp_stats, FUN=sum)
+fp_stats <- aggregate(cts ~ frame + length + cod_idx + transcript, data=fp_stats, FUN=sum)
+fp_stats <- fp_stats[, c("transcript", "cod_idx", "length", "frame", "cts")]
 
 write.table(fp_stats, file="simRiboviz_footprint_counts.txt",
             quote=F, row.names=F, col.names=T, sep="\t")
