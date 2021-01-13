@@ -6,3 +6,7 @@ outputs/*
 *nohup.out
 misc_scripts/*
 *Rout
+simulation_runs/riboviz/*ht2
+simulation_runs/riboviz/*ebwt
+simulation_runs/riboviz/*cutadapt
+simulation_runs/riboviz/*bowtiestats
