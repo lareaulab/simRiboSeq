@@ -79,7 +79,6 @@ names(no_n3bias) <- codons
 noRTbias <- c(1, 0, 0, 0, 0)
 names(noRTbias) <- c("", "A", "T", "C", "G")
 
-
 # generate ribosome profiles ----------------------------------------------
 
 # generate transcriptome: s. cerevisiae

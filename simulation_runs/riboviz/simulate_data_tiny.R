@@ -116,6 +116,8 @@ fp_stats <- data.frame(t(sapply(footprints,
                                   c("transcript"=x@transcript,
                                     cod_idx=x@ASite+1,
                                     length=x@digest5+x@digest3+3,
+                                    d5=x@digest5,
+                                    d3=x@digest3,
                                     frame=d5_to_frame[as.character(x@digest5)])
                                 })))
 rownames(fp_stats) <- NULL
