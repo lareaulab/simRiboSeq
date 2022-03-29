@@ -12,4 +12,4 @@ The vignette demonstrates simulation of a 10-read library from a transcriptome c
 
 To view the vignette, run the following command in R:
 
-`vignette("tiny-sim", package="simRiboSeq)`
+`vignette("tiny-sim", package="simRiboSeq")`
