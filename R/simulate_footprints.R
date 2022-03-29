@@ -13,6 +13,9 @@ simulate_profiles <- function(nRibosomes, rhos, pis) {
   return(raw_profile)
 }
 
+#' Class for footprint objects
+#' 
+#' @export
 footprint <- setClass("footprint", slots=list(sequence="character",
                                               transcript="character",
                                               A_site="numeric",
@@ -41,7 +44,7 @@ digest_transcript <- function(codon_sequence, rpf_counts, transcript_name,
   if(length(A_sites) == 0) { return(NULL) }
   A_site_positions <- 3*A_sites + start_position
   # 3. generate digest lengths
-  digest_5 <- sample(as.numeric(names(delta5)), size=length(A_site_positions),
+  digest_5 <- sample(as.numeric(names(delta_5)), size=length(A_site_positions),
                      prob=delta_5, replace=T)
   digest_3 <- sample(as.numeric(names(delta_3)), size=length(A_site_positions),
                      prob=delta_3, replace=T)
@@ -74,12 +77,12 @@ digest <- function(transcript_seq, rpf_counts, delta_5, delta_3,
   print("... ... digesting footprints")
   num_transcripts <- length(transcript_seq)
   # digest footprints
-  footprints <- unlist(mcmapply(digest_transcript,
-                                codon_sequence=transcript_seq,
-                                rpf_counts=rpf_counts,
-                                transcript_name=names(transcript_seq),
-                                MoreArgs=list(delta_5=delta_5, delta_3=delta_3)))
-  rpf_lengths <- sapply(rpf_seq, function(x) nchar(x@sequence))
+  footprints <- unlist(parallel::mcmapply(digest_transcript,
+                                          codon_sequence=transcript_seq,
+                                          rpf_counts=rpf_counts,
+                                          transcript_name=names(transcript_seq),
+                                          MoreArgs=list(delta_5=delta_5, delta_3=delta_3)))
+  rpf_lengths <- sapply(footprints, function(x) nchar(x@sequence))
   footprints <- footprints[(rpf_lengths >= min_size) & (rpf_lengths <= max_size)]
   return(footprints)
 }
@@ -100,10 +103,10 @@ get_bias_region <- function(footprints, region, bias_length) {
     bias_end <- rpf_lengths
     bias_start <- bias_end - bias_length + 1
   }
-  bias_regions <- unlist(mcmapply(substring,
-                                  text=sapply(footprints, function(x) x@sequence),
-                                  first=bias_start,
-                                  last=bias_end))
+  bias_regions <- unlist(parallel::mcmapply(substring,
+                                            text=sapply(footprints, function(x) x@sequence),
+                                            first=bias_start,
+                                            last=bias_end))
   return(bias_regions)
 }
 
@@ -163,19 +166,18 @@ RT <- function(footprints, rt_bias) {
 #' @param delta_3 named numeric vector; probabilities of 3' digest lengths
 #' @param min_size integer; minimum RPF size
 #' @param max_size integer; maximum RPF size
-#' @param mc.cores integer; number of cores to use for parallelization
-#' @param digest_transcript function; function that digests individual transcripts
 #' @param lig_bias named numeric vector; probabilities for successful 3' ligation
 #' @param rt_bias named numeric vector; probabilities of adding additional nt
 #' @param circ_bias named numeric vector; probabilities for successful 5' circularization
+#' @param mc.cores integer; number of cores to use for parallelization
 #' @return list of \code{footprint} objects
 simulate_footprints <- function(transcript_seq, num_ribosomes, rhos, pis, 
-                          delta_5, delta_3, min_size=27, max_size=31, 
-                          mc.cores=NULL, digest_transcript,
-                          lig_bias, rt_bias, circ_Bias) {
+                                delta_5, delta_3, min_size=27, max_size=31, 
+                                lig_bias, rt_bias, circ_bias, mc.cores=NULL) {
   if(is.null(mc.cores)) {mc.cores <- parallel::detectCores()-10}
   print(paste("Number of cores:", mc.cores))
-  rpf_cluster <- makeCluster(mc.cores)
+  rpf_cluster <- parallel::makeCluster(mc.cores)
+  on.exit(parallel::stopCluster(rpf_cluster))
   num_rounds <- 1
   footprints <- c()
   while(length(footprints) < num_ribosomes) {
@@ -199,6 +201,5 @@ simulate_footprints <- function(transcript_seq, num_ribosomes, rhos, pis,
     num_rounds <- num_rounds + 1
     rm(tmp_cts, tmp_rpf)
   }
-  stopCluster(rpf_cluster)
   return(footprints)
 }

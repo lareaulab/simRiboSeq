@@ -13,7 +13,7 @@ read_fasta <- function(fasta_file, utr5_length, utr3_length) {
   fasta_seq <- as.character(fasta_seq)
   fasta_seq <- lapply(fasta_seq,
                       function(x) {
-                        num_codons <- nchar(x)
+                        num_codons <- floor(nchar(x)/3)
                         start_offset <- utr5_length %% 3
                         codon_sequence <- substring(x,
                                                     first=(3*(seq(num_codons)-1)+1)+start_offset,
@@ -72,6 +72,7 @@ read_raw_profiles <- function(input_file) {
 
 #' Write output from simulate_transcriptome() to .fasta file
 #' 
+#' @export
 #' @param transcripts list of character vectors; transcript sequences from simTranscriptome()
 #' @param output_file character; path to output .fasta file
 write_transcriptome <- function(transcripts, output_file) {
@@ -82,6 +83,7 @@ write_transcriptome <- function(transcripts, output_file) {
 
 #' Write footprints to .fasta file
 #' 
+#' @export
 #' @param footprints list of \code{footprint} objects
 #' @param output_file character; path to output .fasta file
 write_footprints_fasta <- function(footprints, output_file) {
@@ -97,20 +99,22 @@ write_footprints_fasta <- function(footprints, output_file) {
 
 #' Write footprints to .fastq file
 #' 
+#' @export
 #' @param footprints list of \code{footprint} objects
 #' @param output_file character; path to output .fastq file
 #' @param adapterr character; 3' adapter to ligate onto footprint sequence
 write_footprints_fastq <- function(footprints, output_file, 
-                                   adapterr="CTGTAGGCACCATCAAT") {
+                                   adapter="CTGTAGGCACCATCAAT") {
   footprint_sequences <- sapply(footprints,
                                 function(x) {
                                   paste0(x@sequence, adapter)
                                 })
   names(footprint_sequences) <- sapply(footprints,
                                        function(x) {
-                                         paste(x@transcript, x@Asite, x@digest5, 
-                                               x@digest3, x@sequence, x@id, sep="_")
+                                         paste(x@transcript, x@A_site, x@digest_5, 
+                                               x@digest_3, x@sequence, x@id, sep="_")
                                        })
+  footprint_sequences <- Biostrings::DNAStringSet(footprint_sequences)
   Biostrings::writeXStringSet(footprint_sequences, output_file, format="fastq")
 }
 

@@ -4,7 +4,7 @@
 \alias{write_footprints_fastq}
 \title{Write footprints to .fastq file}
 \usage{
-write_footprints_fastq(footprints, output_file, adapterr = "CTGTAGGCACCATCAAT")
+write_footprints_fastq(footprints, output_file, adapter = "CTGTAGGCACCATCAAT")
 }
 \arguments{
 \item{footprints}{list of \code{footprint} objects}

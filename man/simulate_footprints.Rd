@@ -13,11 +13,10 @@ simulate_footprints(
   delta_3,
   min_size = 27,
   max_size = 31,
-  mc.cores = NULL,
-  digest_transcript,
   lig_bias,
   rt_bias,
-  circ_Bias
+  circ_bias,
+  mc.cores = NULL
 )
 }
 \arguments{
@@ -35,17 +34,15 @@ simulate_footprints(
 
 \item{max_size}{integer; maximum RPF size}
 
-\item{mc.cores}{integer; number of cores to use for parallelization}
-
-\item{digest_transcript}{function; function that digests individual transcripts}
-
 \item{lig_bias}{named numeric vector; probabilities for successful 3' ligation}
 
 \item{rt_bias}{named numeric vector; probabilities of adding additional nt}
 
-\item{num_ribosomes:}{integer; number of footprints to generate}
-
 \item{circ_bias}{named numeric vector; probabilities for successful 5' circularization}
+
+\item{mc.cores}{integer; number of cores to use for parallelization}
+
+\item{num_ribosomes:}{integer; number of footprints to generate}
 }
 \value{
 list of \code{footprint} objects
